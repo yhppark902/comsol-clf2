@@ -1,4 +1,5 @@
 clear all
+close all
 clc
 % Model Import
 import com.comsol.model.*
@@ -107,37 +108,44 @@ model.sol('sol1').feature('t1').create('fc1', 'FullyCoupled');
 model.sol('sol1').feature('t1').feature.remove('fcDef');
 
 
-% model.study('std1').feature('time').set('tlist', 'range(0,dtFem/3,dtFem)');
-% 
-% 
-% model.sol('sol1').attach('std1');
-% 
-% %% run
-% model.sol('sol1').feature('st1').label('Compile Equations: Time Dependent');
-% model.sol('sol1').feature('v1').label('Dependent Variables 1.1');
-% model.sol('sol1').feature('v1').set('control', 'user');
-% model.sol('sol1').feature('v1').set('initsol', 'zero');
-% model.sol('sol1').feature('v1').set('initmethod', 'init');
-% model.sol('sol1').feature('t1').set('control', 'time');
-% model.sol('sol1').feature('v1').set('scalemethod', 'manual');
-% model.sol('sol1').feature('v1').feature('comp1_u').set('scalemethod', 'manual');
-% model.sol('sol1').feature('v1').feature('comp1_mbd_rd1_u').set('scalemethod', 'manual');
-% model.sol('sol1').feature('v1').feature('comp1_mbd_rd1_phi').set('scalemethod', 'manual');
-% model.sol('sol1').feature('v1').feature('comp1_mbd_hgj1_th').set('scalemethod', 'manual');
-% model.sol('sol1').feature('t1').label('Time-Dependent Solver 1.1');
-% model.sol('sol1').feature('t1').set('control', 'user');
-% model.sol('sol1').feature('t1').set('rtol', 0.001);
-% model.sol('sol1').feature('t1').set('tstepsbdf', 'strict');
-% model.sol('sol1').feature('t1').set('maxorder', 2);
-% model.sol('sol1').feature('t1').feature('dDef').label('Direct 1');
-% model.sol('sol1').feature('t1').feature('aDef').label('Advanced 1');
-% model.sol('sol1').feature('t1').feature('aDef').set('cachepattern', true);
-% model.sol('sol1').feature('t1').feature('fc1').label('Fully Coupled 1.1');
-% model.sol('sol1').feature('t1').feature('fc1').set('maxiter', 50);
-% model.sol('sol1').feature('t1').feature('fc1').set('jtech', 'onevery');
-% 
-% 
-% %% Assumed feedback gian, CLF
+model.study('std1').feature('time').set('tlist', 'range(0,dtFem/3,dtFem)');
+
+
+model.sol('sol1').attach('std1');
+
+%% run
+model.sol('sol1').feature('st1').label('Compile Equations: Time Dependent');
+model.sol('sol1').feature('v1').label('Dependent Variables 1.1');
+model.sol('sol1').feature('v1').set('control', 'user');
+model.sol('sol1').feature('v1').set('initsol', 'zero');
+model.sol('sol1').feature('v1').set('initmethod', 'init');
+model.sol('sol1').feature('t1').set('control', 'time');
+model.sol('sol1').feature('v1').set('scalemethod', 'manual');
+model.sol('sol1').feature('v1').feature('comp1_u').set('scalemethod', 'manual');
+model.sol('sol1').feature('v1').feature('comp1_u').set('scaleval', 1);
+model.sol('sol1').feature('v1').feature('comp1_mbd_rd1_u').set('scalemethod', 'manual');
+model.sol('sol1').feature('v1').feature('comp1_mbd_rd1_u').set('scaleval', 1);
+model.sol('sol1').feature('v1').feature('comp1_mbd_rd1_phi').set('scalemethod', 'manual');
+model.sol('sol1').feature('v1').feature('comp1_mbd_rd1_phi').set('scaleval', 1);
+model.sol('sol1').feature('v1').feature('comp1_mbd_hgj1_th').set('scalemethod', 'manual');
+model.sol('sol1').feature('v1').feature('comp1_mbd_hgj1_th').set('scaleval', 1);
+model.sol('sol1').feature('v1').feature('comp1_mbd_rd2_u').set('scalemethod', 'manual');
+model.sol('sol1').feature('v1').feature('comp1_mbd_rd2_phi').set('scalemethod', 'manual');
+model.sol('sol1').feature('v1').feature('comp1_mbd_hgj2_th').set('scalemethod', 'manual');
+model.sol('sol1').feature('t1').label('Time-Dependent Solver 1.1');
+model.sol('sol1').feature('t1').set('control', 'user');
+model.sol('sol1').feature('t1').set('rtol', 0.001);
+model.sol('sol1').feature('t1').set('tstepsbdf', 'strict');
+model.sol('sol1').feature('t1').set('maxorder', 2);
+model.sol('sol1').feature('t1').feature('dDef').label('Direct 1');
+model.sol('sol1').feature('t1').feature('aDef').label('Advanced 1');
+model.sol('sol1').feature('t1').feature('aDef').set('cachepattern', true);
+model.sol('sol1').feature('t1').feature('fc1').label('Fully Coupled 1.1');
+model.sol('sol1').feature('t1').feature('fc1').set('maxiter', 50);
+model.sol('sol1').feature('t1').feature('fc1').set('jtech', 'onevery');
+
+
+%% Assumed feedback gian, CLF
 % kp =6e1;
 % kd =5e2;
 % clf_rate=3;
@@ -147,88 +155,98 @@ model.sol('sol1').feature('t1').feature.remove('fcDef');
 % syms x1 x2;
 % x = [x1; x2];
 % 
-% %% Init condition
-% x_init=[0;0];
-% u=0;
-% phi=0.1;
-% phi_t=0;
-% 
-% %% System Identification
-% t=[0];
-% array_t=t;
-% th=[phi];
-% array_th=th;
-% th_t=[0];
-% array_th_t=th_t;
-% array_t_ode23=[];
-% array_th_ode23=[];
-% 
-% for k=1:5e3
-% %% Comsol Paramset
-% model.param.set('M0', strcat(num2str(u),'[N*m]'));
-% model.param.set('phi', phi,'[rad]');
-% model.param.set('phi_t', phi_t,'[rad/s]');
-% model.component('comp1').physics('mbd').feature('rd1').feature('init1').set('phi', 'phi');
-% model.component('comp1').physics('mbd').feature('rd1').feature('init1').set('phit', 'phi_t');
-% model.sol('sol1').runAll;
-% M = mphstate(model,'sol1','out',{'Mc' 'MA' 'MB' 'A' 'B' 'C' 'D' 'x0', 'Null', 'ud'},'input', {'M0'}, 'output', {'comp1.dom1','comp1.dom2'}, 'sparse', 'off', 'initmethod','sol','solnum','first');
-% 
-% %% ODE23s Param set(DAE is stiff. So, manipulate with jacobian and Mc)
-% x_init=[phi/M.Null(1,1); phi_t/M.Null(5,2)];
-% x1=x_init(1)
-% x2=x_init(2);
-% func = @(tt,xx)M.MA*xx+M.MB*u;
-% opt=odeset('mass',M.Mc,'jacobian',M.MA);
-% [t_ode,x_ode]=ode23s(func,[0, 0.02],x_init,opt);
-% y=M.C*x_ode';
-% y(2,:)=[];
-% 
-% array_t_ode23=[array_t_ode23;0.02*(k-1)+t_ode];
-% array_th_ode23=[array_th_ode23;y'];
-% 
-% t=mphglobal(model,'root.t')+t(end);
-% array_t=[array_t;t];
-% th=mphglobal(model,'mbd.hgj1.th');
-% array_th=[array_th;th];
-% phi=array_th(end)
-% th_t=mphglobal(model,'mbd.hgj1.th_t');
-% array_th_t=[array_th_t;th_t];
-% phi_t=array_th_t(end);
-% 
-% %% Constraints : A[u; slack] <= b
-% % Determine control input
-% A=[M.A(1,1),M.A(1,2); M.A(2,1)-kp/M.Null(1,1),M.A(2,2)-kd/M.Null(5,2)];
-% Q=clf_rate*eye(size(A,1));
-% P=lyap(A',Q);
-% clf= x'*P*x;
-% dclf=simplify(jacobian(clf,x));
-% xdim=size(A,1);
-% udim=size(M.B,2);
-% 
-% AA=[double(subs(dclf*M.B)),-1];
-% b=-double(subs(dclf*A*x))-clf_rate*double(subs(clf));
-% %  And max input constraint
-% AA=[AA; eye(udim),zeros(udim,1)];
-% b=[b;umax];
-% % And min inpu contstraint
-% AA =[AA;-eye(udim),zeros(udim,1)];
-% b=[b;-umin];
-% %% Cost
-% H=[eye(udim),zeros(udim,1);
-%     zeros(1,udim),slack];
-% u_ref=zeros(1,udim);
-% ff=[u_ref; 0];
-% u=quadprog(H,ff,AA,b);
-% u=u(1)
-% end
-% 
-% figure(1)
-% plot(array_t,array_th)
-% 
-% 
-% hold on
-% 
-% plot(array_t_ode23,array_th_ode23,'--')
-% legend('comsol','ode23s');
-% xlabel('time(s)');
-% ylabel('theat(rad)');
+%% Init condition
+u=[1;1];
+phi=0;
+phi_t=0;
+
+%% System Identification
+t=[0];
+array_t=[];
+th=[phi];
+array_th=th;
+th_t=[0];
+array_th_t=th_t;
+array_t_ode23=[];
+array_rd1_th_ode23=[];
+array_rd1_thz_ode23=[];
+array_rd2_th_ode23=[];
+array_rd2_thz_ode23=[];
+array_rd1_th=[];
+array_rd1_th_t=[];
+array_rd2_th=[];
+array_rd2_th_t=[];
+
+x_ode_init=[0,0,0,0];
+model.sol('sol1').runAll;
+model.sol('sol1').feature('v1').set('initmethod', 'sol');
+model.sol('sol1').feature('v1').set('initsol', 'sol1');
+model.sol('sol1').feature('v1').set('solnum', 'last');
+
+for k=1:1
+%% Comsol Paramset
+model.param.set('M0', strcat(num2str(u(1)),'[N*m]'));
+model.param.set('M1', strcat(num2str(u(2)),'[N*m]'));
+model.sol('sol1').runAll;
+M = mphstate(model,'sol1','out',{'Mc' 'MA' 'MB' 'A' 'B' 'C' 'D' 'x0', 'Null', 'ud'},'input', {'M0','M1'}, 'output', {'comp1.var1','comp1.var2','comp1.var3','comp1.var4'}, 'sparse', 'off', 'initmethod','sol','solnum','first');
+
+%% ODE23s Param set(DAE is stiff. So, manipulate with jacobian and Mc)
+func = @(tt,xx)M.MA*xx+M.MB*u;
+opt=odeset('mass',M.Mc,'jacobian',M.MA);
+[t_ode,x_ode]=ode23s(func,[0, 0.02],x_ode_init,opt);
+x_ode_init= x_ode(end,:);
+M.C(2,:)=M.Null(9,:);
+M.C(4,:)=M.Null(10,:);
+y=M.C*x_ode';
+
+array_t_ode23=[array_t_ode23;0.02*(k-1)+t_ode];
+array_rd1_th_ode23=[array_rd1_th_ode23;y(1,:)'];
+array_rd1_thz_ode23=[array_rd1_thz_ode23;y(2,:)'];
+array_rd2_th_ode23=[array_rd2_th_ode23;y(3,:)'];
+array_rd2_thz_ode23=[array_rd2_thz_ode23;y(4,:)'];
+
+t=mphglobal(model,'root.t')+t(end);
+array_t=[array_t;t];
+rd1_th=mphglobal(model,'mbd.hgj1.th');
+array_rd1_th=[array_rd1_th;rd1_th];
+rd1_th_t=mphglobal(model,'mbd.hgj1.th_t');
+array_rd1_th_t=[array_rd1_th_t;rd1_th_t];
+
+rd2_th=mphglobal(model,'mbd.hgj2.th');
+array_rd2_th=[array_rd2_th;rd2_th];
+rd2_th_t=mphglobal(model,'mbd.hgj2.th_t');
+array_rd2_th_t=[array_rd2_th_t;rd2_th_t];
+
+end
+
+figure(1)
+plot(array_t,array_rd1_th)
+hold on
+plot(array_t_ode23,array_rd1_th_ode23,'--')
+legend('comsol','ode23s');
+xlabel('time(s)');
+ylabel('theta(rad)');
+
+figure(2)
+plot(array_t,array_rd1_th_t)
+hold on
+plot(array_t_ode23,array_rd1_thz_ode23,'--')
+legend('comsol','ode23s');
+xlabel('time(s)');
+ylabel('dtheta(rad/s)');
+
+figure(3)
+plot(array_t,array_rd2_th)
+hold on
+plot(array_t_ode23,array_rd2_th_ode23,'--')
+legend('comsol','ode23s');
+xlabel('time(s)');
+ylabel('theta(rad)');
+
+figure(4)
+plot(array_t,array_rd2_th_t)
+hold on
+plot(array_t_ode23,array_rd2_thz_ode23,'--')
+legend('comsol','ode23s');
+xlabel('time(s)');
+ylabel('theta(rad/s)');
