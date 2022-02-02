@@ -188,15 +188,22 @@ array_rd2_th_ode23=[];
 array_rd2_th_t_ode23=[];
 
 
-for k=1:2
+for k=1:5
 %% Comsol Paramset
 model.param.set('M0', strcat(num2str(u(1)),'[N*m]'));
 model.param.set('M1', strcat(num2str(u(2)),'[N*m]'));
+if k==1
 model.param.set('phi1', phi1,'[rad]');
 model.param.set('phi1_t', phi1_t,'[rad/s]');
 model.param.set('phi2', phi2,'[rad]');
 model.param.set('phi2_t', phi2_t,'[rad/s]');
 model.sol('sol1').runAll;
+else
+model.sol('sol1').feature('v1').set('initmethod', 'sol');
+model.sol('sol1').feature('v1').set('initsol', 'sol1');
+model.sol('sol1').feature('v1').set('solnum', 'last');
+model.sol('sol1').runAll;
+end
 M = mphstate(model,'sol1','out',{'Mc' 'MA' 'MB' 'A' 'B' 'C' 'D' 'x0', 'Null', 'ud'},'input', {'M0','M1'}, 'output', {'comp1.var1','comp1.var2','comp1.var3','comp1.var4'}, 'sparse', 'off', 'initmethod','sol','solnum','first');
 M.C(2,:)=M.Null(9,:);
 M.C(4,:)=M.Null(10,:);
@@ -233,35 +240,35 @@ th_t2=mphglobal(model,'mbd.hgj2.th_t');
 array_rd2_th_t=[array_rd2_th_t;th_t2];
 phi2_t=array_rd2_th_t(end);
 y_init=[phi1,phi1_t,phi2,phi2_t];
-%% Constraints : A[u; slack] <= b
-% Determine control input
-Q=clf_rate*eye(size(M.A,1));
-P=lyap(M.A',Q);
-clf= x'*P*x;
-dclf=simplify(jacobian(clf,x));
-xdim=size(M.A,1);
-udim=size(M.B,2);
-
-x1=x_init(1);
-x2=x_init(2);
-x3=x_init(3);
-x4=x_init(4);
-
-AA=[double(subs(dclf*M.B)),-1];
-b=-double(subs(dclf*M.A*x))-clf_rate*double(subs(clf));
-%  And max input constraint
-AA=[AA; eye(udim),zeros(udim,1)];
-b=[b;umax];
-% And min inpu contstraint
-AA =[AA;-eye(udim),zeros(udim,1)];
-b=[b;-umin];
-%% Cost
-H=[eye(udim),zeros(udim,1);
-    zeros(1,udim),slack];
-u_ref=zeros(1,udim);
-ff=[u_ref'; 0];
-u=quadprog(H,ff,AA,b);
-u=u(1)
+% %% Constraints : A[u; slack] <= b
+% % Determine control input
+% Q=clf_rate*eye(size(M.A,1));
+% P=lyap(M.A',Q);
+% clf= x'*P*x;
+% dclf=simplify(jacobian(clf,x));
+% xdim=size(M.A,1);
+% udim=size(M.B,2);
+% 
+% x1=x_init(1);
+% x2=x_init(2);
+% x3=x_init(3);
+% x4=x_init(4);
+% 
+% AA=[double(subs(dclf*M.B)),-1];
+% b=-double(subs(dclf*M.A*x))-clf_rate*double(subs(clf));
+% %  And max input constraint
+% AA=[AA; eye(udim),zeros(udim,1)];
+% b=[b;umax];
+% % And min inpu contstraint
+% AA =[AA;-eye(udim),zeros(udim,1)];
+% b=[b;-umin];
+% %% Cost
+% H=[eye(udim),zeros(udim,1);
+%     zeros(1,udim),slack];
+% u_ref=zeros(1,udim);
+% ff=[u_ref'; 0];
+% u=quadprog(H,ff,AA,b);
+% u=u(1)
 end
 
 figure(1)
